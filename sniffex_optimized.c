@@ -69,35 +69,30 @@ int print_num_padded (unsigned char *dst, int src, int base, int pad)
 {
 #ifdef X86_SUPPORT
 	asm volatile (
-		"movq %%rdi, %%rsi\n"		/* ptr = dst */
-		"addq %%rcx, %%rsi\n"
+			"movq %%rdi, %%rsi\n"	/* ptr = dst */
+			"addq %%rcx, %%rsi\n"
 		"pnp_loop1:\n"
-			
-			"cmpq $0, %%rax\n"
-			"jle pnp_endl1\n"
-			
+			"cmpq $0, %%rax\n"	/* src == 0 */
+			"jle pnp_loop2\n"
 			"decq %%rsi\n"
-			"cmpq %%rsi, %%rdi\n"
-			"jg pnp_endl1\n"
+			"cmpq %%rsi, %%rdi\n"	/* ptr, dst */
+			"jg pnp_loop2\n"
 			"xorq %%rdx, %%rdx\n"
 			"idivq %%rbx\n"		/* tmp = rdx, src = rax */
-			
 			"cmpb $9, %%dl\n"
 			"jg pnp_hexval\n"
-			"addb $0x30, %%dl\n"
+			"addb $0x30, %%dl\n"	/* '0' */
 			"jmp pnp_append\n"
 		"pnp_hexval:\n"
-			"addb $0x57, %%dl\n"
+			"addb $0x57, %%dl\n"	/* 'a' - 10 */
 		"pnp_append:\n"
 			"movb %%dl, (%%rsi)\n"
 			"jmp pnp_loop1\n"
-		"pnp_endl1:\n"
-		
 		"pnp_loop2:\n"
 			"decq %%rsi\n"
 			"cmpq %%rsi, %%rdi\n"
 			"jg pnp_endl2\n"
-			"movb $0x30, (%%rsi)\n"
+			"movb $0x30, (%%rsi)\n"	/* '0' */
 			"jmp pnp_loop2\n"
 		"pnp_endl2:\n"
 	
@@ -168,6 +163,18 @@ void print_payload (const unsigned char *src, int len, int line_width)
 	if (len > 0)
 		print_line(src, len, off);
 }
+
+
+/* everything below this line falls under this copyright: 
+ * This software is a modification of Tim Carstens' "sniffer.c"
+ * demonstration source code, released as follows:
+ * 
+ * sniffer.c
+ * Copyright (c) 2002 Tim Carstens
+ * 2002-01-07
+ * Demonstration of using libpcap
+ * timcarst -at- yahoo -dot- com
+ */
 
 void got_packet (u_char *args, const struct pcap_pkthdr *header, const u_char *packet)
 {
