@@ -118,7 +118,7 @@ int print_num_padded (unsigned char *dst, int src, int base, int pad)
 	return pad;
 }
 
-void print_line (const unsigned char *src, int len, int offset)
+void print_line (int fd, const unsigned char *src, int len, int offset)
 {
 	int i;
 	unsigned char buf[128];
@@ -148,20 +148,20 @@ void print_line (const unsigned char *src, int len, int offset)
 	puts((const char *)buf);
 }
 
-void print_payload (const unsigned char *src, int len, int line_width)
+void print_payload (int fd, const unsigned char *src, int len, int line_width)
 {
 	int line_len, off = 0;
 
 	while (len > line_width) {
 		line_len = line_width % len;
-		print_line(src, line_len, off);
+		print_line(fd, src, line_len, off);
 		len -= line_len;
 		src += line_len;
 		off += line_width;
 	}
 	
 	if (len > 0)
-		print_line(src, len, off);
+		print_line(fd, src, len, off);
 }
 
 
@@ -252,7 +252,7 @@ void got_packet (u_char *args, const struct pcap_pkthdr *header, const u_char *p
 	 */
 	if (size_payload > 0) {
 		printf("   Payload (%d bytes):\n", size_payload);
-		print_payload(payload, size_payload, 16);
+		print_payload(STDOUT_FILENO, payload, size_payload, 16);
 	}
 
 	return;
